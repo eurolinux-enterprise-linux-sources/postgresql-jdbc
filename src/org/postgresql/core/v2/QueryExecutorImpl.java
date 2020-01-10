@@ -3,8 +3,6 @@
 * Copyright (c) 2003-2008, PostgreSQL Global Development Group
 * Copyright (c) 2004, Open Cloud Limited.
 *
-* IDENTIFICATION
-*   $PostgreSQL: pgjdbc/org/postgresql/core/v2/QueryExecutorImpl.java,v 1.22 2009/07/01 05:00:40 jurka Exp $
 *
 *-------------------------------------------------------------------------
 */
@@ -595,8 +593,7 @@ public class QueryExecutorImpl implements QueryExecutor {
             }
             catch (NumberFormatException nfe)
             {
-                handler.handleError(new PSQLException(GT.tr("Unable to interpret the update count in command completion tag: {0}.", status), PSQLState.CONNECTION_FAILURE));
-                return ;
+		update_count = Statement.SUCCESS_NO_INFO;
             }
         }
 
@@ -607,7 +604,7 @@ public class QueryExecutorImpl implements QueryExecutor {
     private final PGStream pgStream;
     private final Logger logger;
 
-    public CopyOperation startCopy(String sql) throws SQLException {
+    public CopyOperation startCopy(String sql, boolean suppressBegin) throws SQLException {
         throw new PSQLException(GT.tr("Copy not implemented for protocol version 2"), PSQLState.NOT_IMPLEMENTED);
     }
 }

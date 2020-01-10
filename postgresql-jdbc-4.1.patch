@@ -1,19 +1,11 @@
 Back-patch upstream changes to add minimal JDBC4.1 support.
 
 
-diff -up ./build.xml.sav ./build.xml
---- ./build.xml.sav	2009-07-01 01:00:39.000000000 -0400
-+++ ./build.xml	2012-04-26 15:29:10.000000000 -0400
-@@ -8,7 +8,7 @@
- 
-   This file now requires Ant 1.4.1.  2002-04-18
- 
--  $PostgreSQL: pgjdbc/build.xml,v 1.87 2009/07/01 05:00:39 jurka Exp $
-+  $PostgreSQL: pgjdbc/build.xml,v 1.88 2011/03/31 06:25:41 jurka Exp $
- 
- -->
- 
-@@ -45,9 +45,15 @@
+diff --git a/build.xml b/build.xml
+index 263505a..87680e7 100644
+--- a/build.xml
++++ b/build.xml
+@@ -44,9 +44,15 @@
  	<equals arg1="${java.specification.version}" arg2="1.5"/>
      </condition>
      <condition property="jdbc4">
@@ -30,7 +22,7 @@ diff -up ./build.xml.sav ./build.xml
        </or>
      </condition>
      <condition property="jdbc3any">
-@@ -58,9 +64,8 @@
+@@ -57,9 +63,8 @@
      </condition>
      <condition property="jdbc3plus">
        <or>
@@ -42,7 +34,7 @@ diff -up ./build.xml.sav ./build.xml
        </or>
      </condition>
  
-@@ -69,7 +74,7 @@
+@@ -68,7 +73,7 @@
          <or>
            <isset property="jdbc2" />
            <isset property="jdbc3any" />
@@ -51,7 +43,7 @@ diff -up ./build.xml.sav ./build.xml
          </or>
        </not>
      </condition>
-@@ -82,7 +87,7 @@
+@@ -81,7 +86,7 @@
  
      <condition property="jdbc4tests">
        <and>
@@ -60,7 +52,7 @@ diff -up ./build.xml.sav ./build.xml
          <isset property="junit" />
        </and>
      </condition>
-@@ -161,8 +166,8 @@
+@@ -160,8 +165,8 @@
         <exclude name="${package}/jdbc3g/Jdbc3g*.java" unless="jdbc3g" />
  
         <!-- jdbc4 subpackage -->
@@ -71,7 +63,7 @@ diff -up ./build.xml.sav ./build.xml
  
         <!-- ssl -->
         <include name="${package}/ssl/*.java" />
-@@ -178,10 +183,12 @@
+@@ -177,10 +182,12 @@
         <include name="${package}/ds/*.java" />
         <include name="${package}/ds/common/*.java" />
         <include name="${package}/ds/jdbc23/*.java" />
@@ -85,7 +77,7 @@ diff -up ./build.xml.sav ./build.xml
  
      </javac>
    </target>
-@@ -193,6 +200,8 @@
+@@ -192,6 +199,8 @@
        <include name="${package}/ds/PGSimpleDataSource.java.in"/>
        <include name="${package}/ds/PGPoolingDataSource.java.in"/>
        <include name="${package}/ds/PGPooledConnection.java.in"/>
@@ -94,7 +86,7 @@ diff -up ./build.xml.sav ./build.xml
        <include name="build.properties"/>
        <include name="build.local.properties" />
        </srcfiles>
-@@ -215,6 +224,9 @@
+@@ -214,6 +223,9 @@
      <condition property="edition" value="JDBC4">
  	<equals arg1="${jdbc4}" arg2="true" />
      </condition>
@@ -104,7 +96,7 @@ diff -up ./build.xml.sav ./build.xml
  
      <!-- determine the connection class -->
      <condition property="connectclass" value="org.postgresql.jdbc3.Jdbc3Connection">
-@@ -224,37 +236,49 @@
+@@ -223,37 +235,49 @@
          <equals arg1="${jdbc3g}" arg2="true"/>
      </condition>
      <condition property="connectclass" value="org.postgresql.jdbc4.Jdbc4Connection">
@@ -170,7 +162,7 @@ diff -up ./build.xml.sav ./build.xml
      </condition>
  
      <!-- Some defaults -->
-@@ -262,9 +286,12 @@
+@@ -261,9 +285,12 @@
      <filter token="MINORVERSION" value="${minor}" />
      <filter token="VERSION" value="PostgreSQL ${fullversion} ${edition}" />
      <filter token="JDBCCONNECTCLASS" value="${connectclass}" />
@@ -183,7 +175,7 @@ diff -up ./build.xml.sav ./build.xml
      <filter token="DEF_PGPORT" value="${def_pgport}" />
  
       <fail unless="major" message="'major' undefined. Please follow the directions in README."/>
-@@ -292,6 +319,14 @@
+@@ -291,6 +318,14 @@
            overwrite="true"
            tofile="${package}/ds/PGPooledConnection.java"
            filtering="yes" />
@@ -198,7 +190,7 @@ diff -up ./build.xml.sav ./build.xml
  
    <echo message="Configured build for the ${edition} edition driver." />
    </target>
-@@ -318,6 +353,8 @@
+@@ -317,6 +352,8 @@
      <delete quiet="true" file="${package}/ds/PGPoolingDataSource.java" />
      <delete quiet="true" file="${package}/ds/PGSimpleDataSource.java" />
      <delete quiet="true" file="${package}/ds/PGPooledConnection.java" />
@@ -207,7 +199,7 @@ diff -up ./build.xml.sav ./build.xml
    </target>
  
    <!-- This compiles and executes the JUnit tests -->
-@@ -429,8 +466,8 @@
+@@ -428,8 +465,8 @@
          <include name="**/*.java"/>
  	<exclude name="jdbc3/Jdbc3*.java" unless="jdbc3" />
  	<exclude name="jdbc3g/Jdbc3g*.java" unless="jdbc3g" />
@@ -218,19 +210,11 @@ diff -up ./build.xml.sav ./build.xml
          <exclude name="test/**/*.java"/>
        </fileset>
      </javadoc>
-diff -up ./org/postgresql/Driver.java.in.sav ./org/postgresql/Driver.java.in
---- ./org/postgresql/Driver.java.in.sav	2009-06-01 20:22:58.000000000 -0400
-+++ ./org/postgresql/Driver.java.in	2012-04-26 15:29:10.000000000 -0400
-@@ -3,7 +3,7 @@
- * Copyright (c) 2003-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/Driver.java.in,v 1.78 2009/06/02 00:22:58 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/Driver.java.in,v 1.79 2011/03/31 06:25:41 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
-@@ -748,10 +748,10 @@ public class Driver implements java.sql.
+diff --git a/org/postgresql/Driver.java.in b/org/postgresql/Driver.java.in
+index 35c3bea..e81e080 100644
+--- a/org/postgresql/Driver.java.in
++++ b/org/postgresql/Driver.java.in
+@@ -746,10 +746,10 @@ public class Driver implements java.sql.Driver
       * @return PSQLException with a localized message giving the complete 
       *  description of the unimplemeted function
       */
@@ -244,7 +228,7 @@ diff -up ./org/postgresql/Driver.java.in.sav ./org/postgresql/Driver.java.in
      }
  
      /**
-@@ -776,4 +776,9 @@ public class Driver implements java.sql.
+@@ -774,4 +774,9 @@ public class Driver implements java.sql.Driver
          }
      }
  
@@ -254,17 +238,165 @@ diff -up ./org/postgresql/Driver.java.in.sav ./org/postgresql/Driver.java.in
 +    }
 +
  }
-diff -up ./org/postgresql/ds/.cvsignore.sav ./org/postgresql/ds/.cvsignore
---- ./org/postgresql/ds/.cvsignore.sav	2006-11-28 23:37:58.000000000 -0500
-+++ ./org/postgresql/ds/.cvsignore	2012-04-26 15:29:10.000000000 -0400
-@@ -1,3 +1,4 @@
- PGPooledConnection.java
- PGPoolingDataSource.java
- PGSimpleDataSource.java
-+PGConnectionPoolDataSource.java
-diff -up ./org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java.sav ./org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java
---- ./org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java	2012-04-26 15:29:10.000000000 -0400
+diff --git a/org/postgresql/ds/PGConnectionPoolDataSource.java b/org/postgresql/ds/PGConnectionPoolDataSource.java
+index 8b27c75..e69de29 100644
+--- a/org/postgresql/ds/PGConnectionPoolDataSource.java
++++ b/org/postgresql/ds/PGConnectionPoolDataSource.java
+@@ -1,104 +0,0 @@
+-/*-------------------------------------------------------------------------
+-*
+-* Copyright (c) 2004-2008, PostgreSQL Global Development Group
+-*
+-*
+-*-------------------------------------------------------------------------
+-*/
+-package org.postgresql.ds;
+-
+-import javax.sql.ConnectionPoolDataSource;
+-import javax.sql.PooledConnection;
+-import java.sql.SQLException;
+-import java.io.Serializable;
+-import java.io.ObjectOutputStream;
+-import java.io.ObjectInputStream;
+-import java.io.IOException;
+-
+-import org.postgresql.ds.common.*;
+-
+-/**
+- * PostgreSQL implementation of ConnectionPoolDataSource.  The app server or
+- * middleware vendor should provide a DataSource implementation that takes advantage
+- * of this ConnectionPoolDataSource.  If not, you can use the PostgreSQL implementation
+- * known as PoolingDataSource, but that should only be used if your server or middleware
+- * vendor does not provide their own.  Why? The server may want to reuse the same
+- * Connection across all EJBs requesting a Connection within the same Transaction, or
+- * provide other similar advanced features.
+- *
+- * <p>In any case, in order to use this ConnectionPoolDataSource, you must set the property
+- * databaseName.  The settings for serverName, portNumber, user, and password are
+- * optional.  Note: these properties are declared in the superclass.</p>
+- *
+- * <p>This implementation supports JDK 1.3 and higher.</p>
+- *
+- * @author Aaron Mulder (ammulder@chariotsolutions.com)
+- */
+-public class PGConnectionPoolDataSource extends BaseDataSource implements Serializable, ConnectionPoolDataSource
+-{
+-    private boolean defaultAutoCommit = true;
+-
+-    /**
+-     * Gets a description of this DataSource.
+-     */
+-    public String getDescription()
+-    {
+-        return "ConnectionPoolDataSource from " + org.postgresql.Driver.getVersion();
+-    }
+-
+-    /**
+-     * Gets a connection which may be pooled by the app server or middleware
+-     * implementation of DataSource.
+-     *
+-     * @throws java.sql.SQLException
+-     *     Occurs when the physical database connection cannot be established.
+-     */
+-    public PooledConnection getPooledConnection() throws SQLException
+-    {
+-        return new PGPooledConnection(getConnection(), defaultAutoCommit);
+-    }
+-
+-    /**
+-     * Gets a connection which may be pooled by the app server or middleware
+-     * implementation of DataSource.
+-     *
+-     * @throws java.sql.SQLException
+-     *     Occurs when the physical database connection cannot be established.
+-     */
+-    public PooledConnection getPooledConnection(String user, String password) throws SQLException
+-    {
+-        return new PGPooledConnection(getConnection(user, password), defaultAutoCommit);
+-    }
+-
+-    /**
+-     * Gets whether connections supplied by this pool will have autoCommit
+-     * turned on by default.  The default value is <tt>false</tt>, so that
+-     * autoCommit will be turned off by default.
+-     */
+-    public boolean isDefaultAutoCommit()
+-    {
+-        return defaultAutoCommit;
+-    }
+-
+-    /**
+-     * Sets whether connections supplied by this pool will have autoCommit
+-     * turned on by default.  The default value is <tt>false</tt>, so that
+-     * autoCommit will be turned off by default.
+-     */
+-    public void setDefaultAutoCommit(boolean defaultAutoCommit)
+-    {
+-        this.defaultAutoCommit = defaultAutoCommit;
+-    }
+-
+-    private void writeObject(ObjectOutputStream out) throws IOException
+-    {
+-        writeBaseObject(out);
+-        out.writeBoolean(defaultAutoCommit);
+-    }
+-
+-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+-    {
+-        readBaseObject(in);
+-        defaultAutoCommit = in.readBoolean();
+-    }
+-}
+diff --git a/org/postgresql/ds/PGConnectionPoolDataSource.java.in b/org/postgresql/ds/PGConnectionPoolDataSource.java.in
+new file mode 100644
+index 0000000..c4bd7b4
+--- /dev/null
++++ b/org/postgresql/ds/PGConnectionPoolDataSource.java.in
+@@ -0,0 +1,39 @@
++/*-------------------------------------------------------------------------
++*
++* Copyright (c) 2004-2008, PostgreSQL Global Development Group
++*
++* IDENTIFICATION
++*   $PostgreSQL: pgjdbc/org/postgresql/ds/PGConnectionPoolDataSource.java.in,v 1.1 2011/03/31 06:25:42 jurka Exp $
++*
++*-------------------------------------------------------------------------
++*/
++package org.postgresql.ds;
++
++import javax.sql.ConnectionPoolDataSource;
++
++import org.postgresql.ds.common.*;
++
++/**
++ * PostgreSQL implementation of ConnectionPoolDataSource.  The app server or
++ * middleware vendor should provide a DataSource implementation that takes advantage
++ * of this ConnectionPoolDataSource.  If not, you can use the PostgreSQL implementation
++ * known as PoolingDataSource, but that should only be used if your server or middleware
++ * vendor does not provide their own.  Why? The server may want to reuse the same
++ * Connection across all EJBs requesting a Connection within the same Transaction, or
++ * provide other similar advanced features.
++ *
++ * <p>In any case, in order to use this ConnectionPoolDataSource, you must set the property
++ * databaseName.  The settings for serverName, portNumber, user, and password are
++ * optional.  Note: these properties are declared in the superclass.</p>
++ *
++ * <p>This implementation supports JDK 1.3 and higher.</p>
++ *
++ * @author Aaron Mulder (ammulder@chariotsolutions.com)
++ */
++public class PGConnectionPoolDataSource
++    extends @CONN_POOL_DS_CLASS@
++    implements ConnectionPoolDataSource
++{
++
++}
++
+diff --git a/org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java b/org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java
+new file mode 100644
+index 0000000..7b3ab12
+--- /dev/null
++++ b/org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java
 @@ -0,0 +1,107 @@
 +/*-------------------------------------------------------------------------
 +*
@@ -373,9 +505,11 @@ diff -up ./org/postgresql/ds/jdbc23/AbstractJdbc23ConnectionPoolDataSource.java.
 +    }
 +
 +}
-diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java.sav ./org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java
---- ./org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java	2012-04-26 15:29:10.000000000 -0400
+diff --git a/org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java b/org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java
+new file mode 100644
+index 0000000..97e2658
+--- /dev/null
++++ b/org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java
 @@ -0,0 +1,17 @@
 +package org.postgresql.ds.jdbc4;
 +
@@ -394,28 +528,19 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4ConnectionPoolDataSource.java.sa
 +
 +}
 +
-diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java.sav ./org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java
---- ./org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java.sav	2008-01-08 01:56:28.000000000 -0500
-+++ ./org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java	2012-04-26 15:29:10.000000000 -0400
-@@ -3,14 +3,16 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java,v 1.2 2008/01/08 06:56:28 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java,v 1.3 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
+diff --git a/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java b/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java
+index c275278..07da355 100644
+--- a/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java
++++ b/org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java
+@@ -8,6 +8,7 @@
  package org.postgresql.ds.jdbc4;
  
  import java.sql.Connection;
 +import java.sql.SQLFeatureNotSupportedException;
  import javax.sql.StatementEventListener;
-+
  import org.postgresql.ds.jdbc23.AbstractJdbc23PooledConnection;
  
- public abstract class AbstractJdbc4PooledConnection extends AbstractJdbc23PooledConnection
-@@ -29,4 +31,9 @@ public abstract class AbstractJdbc4Poole
+@@ -27,4 +28,9 @@ public abstract class AbstractJdbc4PooledConnection extends AbstractJdbc23Pooled
      {
      }
  
@@ -425,18 +550,11 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4PooledConnection.java.sav ./org/
 +    }
 +
  }
-diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java.sav ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java
---- ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java.sav	2008-01-08 01:56:28.000000000 -0500
-+++ ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java	2012-04-26 15:29:10.000000000 -0400
-@@ -3,13 +3,14 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java,v 1.2 2008/01/08 06:56:28 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java,v 1.3 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
+diff --git a/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java b/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java
+index 8c1c787..fcd0606 100644
+--- a/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java
++++ b/org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java
+@@ -8,6 +8,7 @@
  package org.postgresql.ds.jdbc4;
  
  import java.sql.SQLException;
@@ -444,7 +562,7 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java.sav ./org
  
  import org.postgresql.ds.jdbc23.AbstractJdbc23PoolingDataSource;
  
-@@ -26,4 +27,9 @@ public abstract class AbstractJdbc4Pooli
+@@ -24,4 +25,9 @@ public abstract class AbstractJdbc4PoolingDataSource extends AbstractJdbc23Pooli
          throw org.postgresql.Driver.notImplemented(this.getClass(), "unwrap(Class<T>)");
      }
  
@@ -454,18 +572,11 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4PoolingDataSource.java.sav ./org
 +    }
 +
  }
-diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java.sav ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java
---- ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java.sav	2008-01-08 01:56:28.000000000 -0500
-+++ ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java	2012-04-26 15:29:10.000000000 -0400
-@@ -3,13 +3,14 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java,v 1.3 2008/01/08 06:56:28 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java,v 1.4 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
+diff --git a/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java b/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java
+index 4b5e073..944f2d3 100644
+--- a/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java
++++ b/org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java
+@@ -8,6 +8,7 @@
  package org.postgresql.ds.jdbc4;
  
  import java.sql.SQLException;
@@ -473,7 +584,7 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java.sav ./org/
  
  import org.postgresql.ds.jdbc23.AbstractJdbc23SimpleDataSource;
  
-@@ -25,4 +26,9 @@ public abstract class AbstractJdbc4Simpl
+@@ -23,4 +24,9 @@ public abstract class AbstractJdbc4SimpleDataSource extends AbstractJdbc23Simple
          throw org.postgresql.Driver.notImplemented(this.getClass(), "unwrap(Class<T>)");
      }
  
@@ -483,172 +594,11 @@ diff -up ./org/postgresql/ds/jdbc4/AbstractJdbc4SimpleDataSource.java.sav ./org/
 +    }
 +
  }
-diff -up ./org/postgresql/ds/PGConnectionPoolDataSource.java.in.sav ./org/postgresql/ds/PGConnectionPoolDataSource.java.in
---- ./org/postgresql/ds/PGConnectionPoolDataSource.java.in.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/ds/PGConnectionPoolDataSource.java.in	2012-04-26 15:29:10.000000000 -0400
-@@ -0,0 +1,39 @@
-+/*-------------------------------------------------------------------------
-+*
-+* Copyright (c) 2004-2008, PostgreSQL Global Development Group
-+*
-+* IDENTIFICATION
-+*   $PostgreSQL: pgjdbc/org/postgresql/ds/PGConnectionPoolDataSource.java.in,v 1.1 2011/03/31 06:25:42 jurka Exp $
-+*
-+*-------------------------------------------------------------------------
-+*/
-+package org.postgresql.ds;
-+
-+import javax.sql.ConnectionPoolDataSource;
-+
-+import org.postgresql.ds.common.*;
-+
-+/**
-+ * PostgreSQL implementation of ConnectionPoolDataSource.  The app server or
-+ * middleware vendor should provide a DataSource implementation that takes advantage
-+ * of this ConnectionPoolDataSource.  If not, you can use the PostgreSQL implementation
-+ * known as PoolingDataSource, but that should only be used if your server or middleware
-+ * vendor does not provide their own.  Why? The server may want to reuse the same
-+ * Connection across all EJBs requesting a Connection within the same Transaction, or
-+ * provide other similar advanced features.
-+ *
-+ * <p>In any case, in order to use this ConnectionPoolDataSource, you must set the property
-+ * databaseName.  The settings for serverName, portNumber, user, and password are
-+ * optional.  Note: these properties are declared in the superclass.</p>
-+ *
-+ * <p>This implementation supports JDK 1.3 and higher.</p>
-+ *
-+ * @author Aaron Mulder (ammulder@chariotsolutions.com)
-+ */
-+public class PGConnectionPoolDataSource
-+    extends @CONN_POOL_DS_CLASS@
-+    implements ConnectionPoolDataSource
-+{
-+
-+}
-+
-diff -up ./org/postgresql/ds/PGConnectionPoolDataSource.java.sav ./org/postgresql/ds/PGConnectionPoolDataSource.java
---- ./org/postgresql/ds/PGConnectionPoolDataSource.java.sav	2008-01-08 01:56:27.000000000 -0500
-+++ ./org/postgresql/ds/PGConnectionPoolDataSource.java	2012-04-26 15:34:16.000000000 -0400
-@@ -1,106 +0,0 @@
--/*-------------------------------------------------------------------------
--*
--* Copyright (c) 2004-2008, PostgreSQL Global Development Group
--*
--* IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/ds/PGConnectionPoolDataSource.java,v 1.5 2008/01/08 06:56:27 jurka Exp $
--*
--*-------------------------------------------------------------------------
--*/
--package org.postgresql.ds;
--
--import javax.sql.ConnectionPoolDataSource;
--import javax.sql.PooledConnection;
--import java.sql.SQLException;
--import java.io.Serializable;
--import java.io.ObjectOutputStream;
--import java.io.ObjectInputStream;
--import java.io.IOException;
--
--import org.postgresql.ds.common.*;
--
--/**
-- * PostgreSQL implementation of ConnectionPoolDataSource.  The app server or
-- * middleware vendor should provide a DataSource implementation that takes advantage
-- * of this ConnectionPoolDataSource.  If not, you can use the PostgreSQL implementation
-- * known as PoolingDataSource, but that should only be used if your server or middleware
-- * vendor does not provide their own.  Why? The server may want to reuse the same
-- * Connection across all EJBs requesting a Connection within the same Transaction, or
-- * provide other similar advanced features.
-- *
-- * <p>In any case, in order to use this ConnectionPoolDataSource, you must set the property
-- * databaseName.  The settings for serverName, portNumber, user, and password are
-- * optional.  Note: these properties are declared in the superclass.</p>
-- *
-- * <p>This implementation supports JDK 1.3 and higher.</p>
-- *
-- * @author Aaron Mulder (ammulder@chariotsolutions.com)
-- */
--public class PGConnectionPoolDataSource extends BaseDataSource implements Serializable, ConnectionPoolDataSource
--{
--    private boolean defaultAutoCommit = true;
--
--    /**
--     * Gets a description of this DataSource.
--     */
--    public String getDescription()
--    {
--        return "ConnectionPoolDataSource from " + org.postgresql.Driver.getVersion();
--    }
--
--    /**
--     * Gets a connection which may be pooled by the app server or middleware
--     * implementation of DataSource.
--     *
--     * @throws java.sql.SQLException
--     *     Occurs when the physical database connection cannot be established.
--     */
--    public PooledConnection getPooledConnection() throws SQLException
--    {
--        return new PGPooledConnection(getConnection(), defaultAutoCommit);
--    }
--
--    /**
--     * Gets a connection which may be pooled by the app server or middleware
--     * implementation of DataSource.
--     *
--     * @throws java.sql.SQLException
--     *     Occurs when the physical database connection cannot be established.
--     */
--    public PooledConnection getPooledConnection(String user, String password) throws SQLException
--    {
--        return new PGPooledConnection(getConnection(user, password), defaultAutoCommit);
--    }
--
--    /**
--     * Gets whether connections supplied by this pool will have autoCommit
--     * turned on by default.  The default value is <tt>false</tt>, so that
--     * autoCommit will be turned off by default.
--     */
--    public boolean isDefaultAutoCommit()
--    {
--        return defaultAutoCommit;
--    }
--
--    /**
--     * Sets whether connections supplied by this pool will have autoCommit
--     * turned on by default.  The default value is <tt>false</tt>, so that
--     * autoCommit will be turned off by default.
--     */
--    public void setDefaultAutoCommit(boolean defaultAutoCommit)
--    {
--        this.defaultAutoCommit = defaultAutoCommit;
--    }
--
--    private void writeObject(ObjectOutputStream out) throws IOException
--    {
--        writeBaseObject(out);
--        out.writeBoolean(defaultAutoCommit);
--    }
--
--    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
--    {
--        readBaseObject(in);
--        defaultAutoCommit = in.readBoolean();
--    }
--}
-diff -up ./org/postgresql/jdbc4/AbstractJdbc4Connection.java.sav ./org/postgresql/jdbc4/AbstractJdbc4Connection.java
---- ./org/postgresql/jdbc4/AbstractJdbc4Connection.java.sav	2012-04-26 15:29:51.000000000 -0400
-+++ ./org/postgresql/jdbc4/AbstractJdbc4Connection.java	2012-04-26 15:31:24.000000000 -0400
-@@ -3,7 +3,7 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4Connection.java,v 1.7 2008/10/08 18:24:05 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4Connection.java,v 1.11 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
-@@ -14,6 +14,7 @@ import java.util.Map;
+diff --git a/org/postgresql/jdbc4/AbstractJdbc4Connection.java b/org/postgresql/jdbc4/AbstractJdbc4Connection.java
+index 5fe713c..8d04601 100644
+--- a/org/postgresql/jdbc4/AbstractJdbc4Connection.java
++++ b/org/postgresql/jdbc4/AbstractJdbc4Connection.java
+@@ -12,6 +12,7 @@ import java.util.Map;
  import java.util.HashMap;
  import java.util.Iterator;
  import java.util.Properties;
@@ -656,7 +606,7 @@ diff -up ./org/postgresql/jdbc4/AbstractJdbc4Connection.java.sav ./org/postgresq
  
  import org.postgresql.core.Oid;
  import org.postgresql.core.TypeInfo;
-@@ -151,5 +152,32 @@ abstract class AbstractJdbc4Connection e
+@@ -150,5 +151,32 @@ abstract class AbstractJdbc4Connection extends org.postgresql.jdbc3g.AbstractJdb
          throw org.postgresql.Driver.notImplemented(this.getClass(), "unwrap(Class<T>)");
      }
  
@@ -689,19 +639,11 @@ diff -up ./org/postgresql/jdbc4/AbstractJdbc4Connection.java.sav ./org/postgresq
 +    }
  
  }
-diff -up ./org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java.sav ./org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java
---- ./org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java.sav	2012-04-26 15:31:37.000000000 -0400
-+++ ./org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java	2012-04-26 15:33:08.000000000 -0400
-@@ -3,7 +3,7 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java,v 1.7 2008/01/08 06:56:30 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java,v 1.11 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
-@@ -90,4 +90,13 @@ public abstract class AbstractJdbc4Datab
+diff --git a/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java b/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java
+index 6be438b..a8afc20 100644
+--- a/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java
++++ b/org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java
+@@ -88,4 +88,13 @@ public abstract class AbstractJdbc4DatabaseMetaData extends org.postgresql.jdbc3
          return getColumns(4, catalog, schemaPattern, tableNamePattern, columnNamePattern);
      }
  
@@ -715,19 +657,11 @@ diff -up ./org/postgresql/jdbc4/AbstractJdbc4DatabaseMetaData.java.sav ./org/pos
 +    }
 +
  }
-diff -up ./org/postgresql/jdbc4/AbstractJdbc4ResultSet.java.sav ./org/postgresql/jdbc4/AbstractJdbc4ResultSet.java
---- ./org/postgresql/jdbc4/AbstractJdbc4ResultSet.java.sav	2008-10-08 14:24:05.000000000 -0400
-+++ ./org/postgresql/jdbc4/AbstractJdbc4ResultSet.java	2012-04-26 15:29:10.000000000 -0400
-@@ -3,7 +3,7 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java,v 1.6 2008/10/08 18:24:05 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java,v 1.7 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
-@@ -298,6 +298,15 @@ abstract class AbstractJdbc4ResultSet ex
+diff --git a/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java b/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java
+index ad57d55..1a3a26c 100644
+--- a/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java
++++ b/org/postgresql/jdbc4/AbstractJdbc4ResultSet.java
+@@ -296,6 +296,15 @@ abstract class AbstractJdbc4ResultSet extends org.postgresql.jdbc3g.AbstractJdbc
          return super.internalGetObject(columnIndex, field);
      }
  
@@ -743,19 +677,11 @@ diff -up ./org/postgresql/jdbc4/AbstractJdbc4ResultSet.java.sav ./org/postgresql
  
  }
  
-diff -up ./org/postgresql/jdbc4/AbstractJdbc4Statement.java.sav ./org/postgresql/jdbc4/AbstractJdbc4Statement.java
---- ./org/postgresql/jdbc4/AbstractJdbc4Statement.java.sav	2008-10-08 14:24:05.000000000 -0400
-+++ ./org/postgresql/jdbc4/AbstractJdbc4Statement.java	2012-04-26 15:29:10.000000000 -0400
-@@ -3,7 +3,7 @@
- * Copyright (c) 2004-2008, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
--*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4Statement.java,v 1.5 2008/10/08 18:24:05 jurka Exp $
-+*   $PostgreSQL: pgjdbc/org/postgresql/jdbc4/AbstractJdbc4Statement.java,v 1.6 2011/03/31 06:25:42 jurka Exp $
- *
- *-------------------------------------------------------------------------
- */
-@@ -367,4 +367,29 @@ abstract class AbstractJdbc4Statement ex
+diff --git a/org/postgresql/jdbc4/AbstractJdbc4Statement.java b/org/postgresql/jdbc4/AbstractJdbc4Statement.java
+index d0b875b..4ad074a 100644
+--- a/org/postgresql/jdbc4/AbstractJdbc4Statement.java
++++ b/org/postgresql/jdbc4/AbstractJdbc4Statement.java
+@@ -365,4 +365,29 @@ abstract class AbstractJdbc4Statement extends org.postgresql.jdbc3g.AbstractJdbc
          throw org.postgresql.Driver.notImplemented(this.getClass(), "unwrap(Class<T>)");
      }
  
@@ -785,14 +711,45 @@ diff -up ./org/postgresql/jdbc4/AbstractJdbc4Statement.java.sav ./org/postgresql
 +    }
 +
  }
-diff -up ./org/postgresql/xa/.cvsignore.sav ./org/postgresql/xa/.cvsignore
---- ./org/postgresql/xa/.cvsignore.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/xa/.cvsignore	2012-04-26 15:29:10.000000000 -0400
-@@ -0,0 +1 @@
-+PGXADataSource.java
-diff -up ./org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java.sav ./org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java
---- ./org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java	2012-04-26 15:29:10.000000000 -0400
+diff --git a/org/postgresql/xa/PGXAConnection.java b/org/postgresql/xa/PGXAConnection.java
+index a53b543..b8d1351 100644
+--- a/org/postgresql/xa/PGXAConnection.java
++++ b/org/postgresql/xa/PGXAConnection.java
+@@ -76,7 +76,7 @@ public class PGXAConnection extends PGPooledConnection implements XAConnection,
+         logger.debug("XAResource " + Integer.toHexString(this.hashCode()) + ": " + s);
+     }
+ 
+-    PGXAConnection(BaseConnection conn) throws SQLException
++    public PGXAConnection(BaseConnection conn) throws SQLException
+     {
+         super(conn, true, true);
+         this.conn = conn;
+diff --git a/org/postgresql/xa/PGXADataSource.java.in b/org/postgresql/xa/PGXADataSource.java.in
+new file mode 100644
+index 0000000..10e89c8
+--- /dev/null
++++ b/org/postgresql/xa/PGXADataSource.java.in
+@@ -0,0 +1,15 @@
++package org.postgresql.xa;
++
++import javax.sql.XADataSource;
++
++/**
++ * XA-enabled DataSource implementation.
++ *
++ * @author Heikki Linnakangas (heikki.linnakangas@iki.fi)
++ */
++public class PGXADataSource
++    extends @XA_DS_CLASS@
++    implements XADataSource
++{
++}
++
+diff --git a/org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java b/org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java
+new file mode 100644
+index 0000000..78fef9d
+--- /dev/null
++++ b/org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java
 @@ -0,0 +1,65 @@
 +package org.postgresql.xa.jdbc3;
 +
@@ -859,9 +816,11 @@ diff -up ./org/postgresql/xa/jdbc3/AbstractJdbc3XADataSource.java.sav ./org/post
 +                   null);
 +    }
 +}
-diff -up ./org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java.sav ./org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java
---- ./org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java	2012-04-26 15:29:10.000000000 -0400
+diff --git a/org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java b/org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java
+new file mode 100644
+index 0000000..d45230b
+--- /dev/null
++++ b/org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java
 @@ -0,0 +1,17 @@
 +package org.postgresql.xa.jdbc4;
 +
@@ -878,36 +837,5 @@ diff -up ./org/postgresql/xa/jdbc4/AbstractJdbc4XADataSource.java.sav ./org/post
 +        throw org.postgresql.Driver.notImplemented(this.getClass(), "getParentLogger()");
 +    }
 +
-+}
-+
-diff -up ./org/postgresql/xa/PGXAConnection.java.sav ./org/postgresql/xa/PGXAConnection.java
---- ./org/postgresql/xa/PGXAConnection.java.sav	2007-11-14 17:03:36.000000000 -0500
-+++ ./org/postgresql/xa/PGXAConnection.java	2012-04-26 15:29:10.000000000 -0400
-@@ -68,7 +68,7 @@ public class PGXAConnection extends PGPo
-         logger.debug("XAResource " + Integer.toHexString(this.hashCode()) + ": " + s);
-     }
- 
--    PGXAConnection(BaseConnection conn) throws SQLException
-+    public PGXAConnection(BaseConnection conn) throws SQLException
-     {
-         super(conn, true, true);
-         this.conn = conn;
-diff -up ./org/postgresql/xa/PGXADataSource.java.in.sav ./org/postgresql/xa/PGXADataSource.java.in
---- ./org/postgresql/xa/PGXADataSource.java.in.sav	2012-04-26 15:29:10.000000000 -0400
-+++ ./org/postgresql/xa/PGXADataSource.java.in	2012-04-26 15:29:10.000000000 -0400
-@@ -0,0 +1,15 @@
-+package org.postgresql.xa;
-+
-+import javax.sql.XADataSource;
-+
-+/**
-+ * XA-enabled DataSource implementation.
-+ *
-+ * @author Heikki Linnakangas (heikki.linnakangas@iki.fi)
-+ */
-+public class PGXADataSource
-+    extends @XA_DS_CLASS@
-+    implements XADataSource
-+{
 +}
 +

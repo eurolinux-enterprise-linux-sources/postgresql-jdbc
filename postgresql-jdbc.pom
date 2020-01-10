@@ -12,12 +12,12 @@
   <licenses>
     <license>
       <name>BSD License</name>
-      <url>http://jdbc.postgresql.org/license.html</url>
+      <url>http://jdbc.postgresql.org/about/license.html</url>
 
       <distribution>repo</distribution>
     </license>
   </licenses>
   <scm>
-    <url>http://gborg.postgresql.org/project/pgjdbc/cvs/cvs.php</url>
+    <url>http://jdbc.postgresql.org/development/git.html</url>
   </scm>
 </project>

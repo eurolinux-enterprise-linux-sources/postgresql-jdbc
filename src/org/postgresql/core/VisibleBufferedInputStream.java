@@ -2,8 +2,6 @@
  *
  * Copyright (c) 2006-2008, PostgreSQL Global Development Group
  *
- * IDENTIFICATION
- *   $PostgreSQL: pgjdbc/org/postgresql/core/VisibleBufferedInputStream.java,v 1.3 2008/01/08 06:56:27 jurka Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -72,6 +70,16 @@ public class VisibleBufferedInputStream extends InputStream {
     public int read() throws IOException {
         if (ensureBytes(1)) {
             return buffer[index++] & 0xFF;
+        }
+        return -1;
+    }
+
+    /**
+     * Reads a byte from the buffer without advancing the index pointer.
+     */
+    public int peek() throws IOException {
+        if (ensureBytes(1)) {
+            return buffer[index] & 0xFF;
         }
         return -1;
     }

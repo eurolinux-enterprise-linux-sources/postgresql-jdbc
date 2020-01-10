@@ -2,9 +2,6 @@
 *
 * Copyright (c) 2009, PostgreSQL Global Development Group
 *
-* IDENTIFICATION
-*   $PostgreSQL: pgjdbc/org/postgresql/copy/PGCopyInputStream.java,v 1.1 2009/07/01 05:00:39 jurka Exp $
-*
 *-------------------------------------------------------------------------
 */
 package org.postgresql.copy;

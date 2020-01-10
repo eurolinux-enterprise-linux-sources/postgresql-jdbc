@@ -46,12 +46,12 @@
 %global gcj_support %{?_with_gcj_support:1}%{!?_with_gcj_support:%{?_without_gcj_support:0}%{!?_without_gcj_support:%{?_gcj_support:%{_gcj_support}}%{!?_gcj_support:0}}}
 
 %global section		devel
-%global upstreamver	8.4-701
+%global upstreamver	8.4-704
 
 Summary:	JDBC driver for PostgreSQL
 Name:		postgresql-jdbc
-Version:	8.4.701
-Release:	8%{?dist}
+Version:	8.4.704
+Release:	2%{?dist}
 # ASL 2.0 applies only to postgresql-jdbc.pom file, the rest is BSD
 License:	BSD and ASL 2.0
 Group:		Applications/Databases
@@ -60,8 +60,7 @@ URL:		http://jdbc.postgresql.org/
 Source0:	http://jdbc.postgresql.org/download/%{name}-%{upstreamver}.src.tar.gz
 # originally http://repo2.maven.org/maven2/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.pom:
 Source1:	postgresql-jdbc.pom
-Patch1:		postgresql-jdbc-bogus-import.patch
-Patch2:		postgresql-jdbc-4.1.patch
+Patch1:		postgresql-jdbc-4.1.patch
 
 %if ! %{gcj_support}
 BuildArch:	noarch
@@ -107,14 +106,13 @@ Java programs to access a PostgreSQL database.
 %prep
 %setup -c -q
 mv -f %{name}-%{upstreamver}.src/* .
-rm -f %{name}-%{upstreamver}.src/.cvsignore
+rm -f %{name}-%{upstreamver}.src/{.gitignore,.travis.yml}
 rmdir %{name}-%{upstreamver}.src
 
 # remove any binary libs
 find -name "*.jar" -or -name "*.class" | xargs rm -f
 
 %patch1 -p1
-%patch2 -p1
 
 %build
 export OPT_JAR_LIST="ant/ant-junit junit"
@@ -183,6 +181,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_mavenpomdir}/JPP-%{name}.pom
 
 %changelog
+* Mon May 26 2014 Pavel Raiskup <praiskup@redhat.com> - 8.4.704-2
+- revert back %%maven related changes from previous commit
+
+* Mon May 26 2014 Pavel Raiskup <praiskup@redhat.com> - 8.4.704-1
+- rebase to 8.4.704 (#816731)
+
 * Sun May 20 2012 Tom Lane <tgl@redhat.com> 8.4.701-8
 - Add explicit Obsoletes to get rid of old arch-specific packages,
   per discussions in bugs 821892 and 822206

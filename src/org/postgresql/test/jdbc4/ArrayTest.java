@@ -2,8 +2,6 @@
 *
 * Copyright (c) 2007-2008, PostgreSQL Global Development Group
 *
-* IDENTIFICATION
-*   $PostgreSQL: pgjdbc/org/postgresql/test/jdbc4/ArrayTest.java,v 1.3 2008/01/08 06:56:31 jurka Exp $
 *
 *-------------------------------------------------------------------------
 */
@@ -12,6 +10,7 @@ package org.postgresql.test.jdbc4;
 import java.sql.*;
 import junit.framework.TestCase;
 import org.postgresql.test.TestUtil;
+import org.postgresql.geometric.PGbox;
 
 public class ArrayTest extends TestCase {
 
@@ -70,11 +69,36 @@ public class ArrayTest extends TestCase {
         assertEquals("\"\\'z", out[1][1]);
     }
 
+    public void testCreateArrayWithNonStandardDelimiter() throws SQLException {
+        PGbox in[] = new PGbox[2];
+        in[0] = new PGbox(1, 2, 3, 4);
+        in[1] = new PGbox(5, 6, 7, 8);
+
+        PreparedStatement pstmt = _conn.prepareStatement("SELECT ?::box[]");
+        pstmt.setArray(1, _conn.createArrayOf("box", in));
+        ResultSet rs = pstmt.executeQuery();
+        assertTrue(rs.next());
+        Array arr = rs.getArray(1);
+        ResultSet arrRs = arr.getResultSet();
+        assertTrue(arrRs.next());
+        assertEquals(in[0], arrRs.getObject(2));
+        assertTrue(arrRs.next());
+        assertEquals(in[1], arrRs.getObject(2));
+        assertFalse(arrRs.next());
+    }
+
+
     public void testCreateArrayOfNull() throws SQLException {
         if (!TestUtil.haveMinimumServerVersion(_conn, "8.2"))
             return;
 
-        PreparedStatement pstmt = _conn.prepareStatement("SELECT ?");
+        String sql = "SELECT ?";
+        // We must provide the type information for V2 protocol
+        if (TestUtil.isProtocolVersion(_conn, 2)) {
+            sql = "SELECT ?::int8[]";
+        }
+
+        PreparedStatement pstmt = _conn.prepareStatement(sql);
         String in[] = new String[2];
         in[0] = null;
         in[1] = null;
