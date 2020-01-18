@@ -1,0 +1,62 @@
+The (pretty old) RHEL7 jdbc connector might well be run against newer
+PostgreSQL servers; newer than the system-default PostgreSQL 9.2,
+especially if we consider that we are asynchronously adding new servers
+into RHSCL channel.
+
+During the lifetime of postgresql-jdbc package, PostgreSQL upstream bumped
+major version from 9.6 to 10 (together with changing of the versioning
+scheme), which caused troubles with the implemented server-version
+comparator in pgjdbc; that code did not count with two-digit numbers in
+version string.  This patch fixes the problem downstream-only way, since
+backporting related upstream fixes would lead to much larger patch and
+risks that something goes wrong.  We still fallback to the old comparison
+method when we are not sure about the comparison (that is when isNewerOrEqual
+throws some exception).
+
+diff --git a/org/postgresql/jdbc2/AbstractJdbc2Connection.java b/org/postgresql/jdbc2/AbstractJdbc2Connection.java
+index 2fb37f4..d889247 100644
+--- a/org/postgresql/jdbc2/AbstractJdbc2Connection.java
++++ b/org/postgresql/jdbc2/AbstractJdbc2Connection.java
+@@ -1061,14 +1061,39 @@ public abstract class AbstractJdbc2Connection implements BaseConnection
+         }
+     }
+ 
++    private static boolean
++        isNewerOrEqual(String v1, String v2)
++    {
++        Iterator<String> i1 = Arrays.asList(v1.split("\\.")).iterator();
++        Iterator<String> i2 = Arrays.asList(v2.split("\\.")).iterator();
++
++        while (true) {
++            if (!i1.hasNext())
++                return true;
++            if (!i2.hasNext())
++                return false;
++
++            int left = Integer.parseInt(i1.next());
++            int right = Integer.parseInt(i2.next());
++
++            if (right == left)
++                continue;
++
++            return right >= left;
++        }
++    }
++
+     /**
+      * Is the server we are connected to running at least this version?
+-     * This comparison method will fail whenever a major or minor version
+-     * goes to two digits (10.3.0) or (7.10.1).
+      */
+     public boolean haveMinimumServerVersion(String ver)
+     {
+-        return (dbVersionNumber.compareTo(ver) >= 0);
++        try {
++            return isNewerOrEqual(ver, dbVersionNumber);
++        }
++        catch (Exception e) {
++            return (dbVersionNumber.compareTo(ver) >= 0);
++        }
+     }
+ 
+     /*

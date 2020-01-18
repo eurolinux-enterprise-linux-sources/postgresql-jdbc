@@ -34,7 +34,7 @@
 Summary:	JDBC driver for PostgreSQL
 Name:		postgresql-jdbc
 Version:	9.2.1002
-Release:	5%{?dist}
+Release:	6%{?dist}
 # ASL 2.0 applies only to postgresql-jdbc.pom file, the rest is BSD
 License:	BSD and ASL 2.0
 Group:		Applications/Databases
@@ -44,6 +44,10 @@ Source0:	http://jdbc.postgresql.org/download/%{name}-%{upstreamver}.src.tar.gz
 # originally http://repo2.maven.org/maven2/postgresql/postgresql/8.4-701.jdbc4/postgresql-8.4-701.jdbc4.pom:
 Source1:	%{name}.pom
 
+# patches are self-documented inside the files
+Patch1:		postgresql-jdbc-9.2.1002-version-compare.patch
+Patch2:		postgresql-jdbc-9.2.1002-getIndexInfo-and-9.6-server.patch
+
 BuildArch:	noarch
 BuildRequires:	java-devel
 BuildRequires:	jpackage-utils
@@ -52,7 +56,7 @@ BuildRequires:	ant-junit
 BuildRequires:	junit
 # gettext is only needed if we try to update translations
 #BuildRequires:	gettext
-Requires:	java
+Requires:	java-headless
 Requires:	jpackage-utils
 
 %description
@@ -72,6 +76,9 @@ This package contains the API Documentation for %{name}.
 mv -f %{name}-%{upstreamver}.src/* .
 rm -f %{name}-%{upstreamver}.src/.gitignore
 rmdir %{name}-%{upstreamver}.src
+
+%patch1 -p1 -b .version
+%patch2 -p1 -b .getIndexInfo
 
 # remove any binary libs
 find -name "*.jar" -or -name "*.class" | xargs rm -f
@@ -123,6 +130,10 @@ install -d build/publicapi docs/%{name}
 %doc %{_javadocdir}/%{name}
 
 %changelog
+* Fri Apr 20 2018 Pavel Raiskup <praiskup@redhat.com> - 9.2.1002-6
+- fix incompatibility with 9.6+ (rhbz#1547424)
+- it's unnecessary to depend on whole java (rhbz#1406931)
+
 * Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 9.2.1002-5
 - Mass rebuild 2013-12-27
 
