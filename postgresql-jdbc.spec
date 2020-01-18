@@ -34,7 +34,7 @@
 Summary:	JDBC driver for PostgreSQL
 Name:		postgresql-jdbc
 Version:	9.2.1002
-Release:	4%{?dist}
+Release:	5%{?dist}
 # ASL 2.0 applies only to postgresql-jdbc.pom file, the rest is BSD
 License:	BSD and ASL 2.0
 Group:		Applications/Databases
@@ -123,6 +123,9 @@ install -d build/publicapi docs/%{name}
 %doc %{_javadocdir}/%{name}
 
 %changelog
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 9.2.1002-5
+- Mass rebuild 2013-12-27
+
 * Tue Aug 06 2013 Pavel Raiskup <praiskup@redhat.com> - 9.2.1002-4
 - add javadoc subpackage
 
